@@ -1,0 +1,212 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HiperMove – AI movement coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f3f7;--card:#fff;--ink:#111827;--mute:#6b7280;--line:#e3e7ee;--acc:#3a4bff;--on:#fff;--soft:#e8ebff;--chip:#2a37c9;--neu:#dde2ea;--neu2:#cfd5df;--tint:#f5f7fa;--track:#edf0f5;--good:#12a36b;--warn:#d9930d;--bad:#e5484d}
+[data-theme=dark]{--bg:#0b0f17;--card:#141a26;--ink:#e8ecf4;--mute:#8b95a7;--line:#222b3b;--acc:#8391ff;--on:#0b0f17;--soft:#232a52;--chip:#b9c1ff;--neu:#263044;--neu2:#334058;--tint:#1a2230;--track:#222b3b;--good:#34c98b;--warn:#f0b43c;--bad:#ff6b70}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "DM Sans",system-ui,sans-serif;transition:background .3s}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque","DM Sans",sans-serif;letter-spacing:-.02em;margin:0}
+.top{max-width:1200px;margin:0 auto;padding:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font:800 26px "Bricolage Grotesque";letter-spacing:-.03em}.logo i{color:var(--acc);font-style:normal}
+nav{display:flex;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;margin-left:auto}
+nav button{border:0;background:none;padding:8px 18px;border-radius:999px;font:600 14px "DM Sans";color:var(--mute);cursor:pointer}
+nav button.on{background:var(--ink);color:var(--bg)}
+.pill{display:flex;align-items:center;gap:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font:700 14px "DM Sans";cursor:pointer}
+.pill svg{width:16px;fill:#ff6a1a}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px 48px}.view[hidden]{display:none}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:20px;align-items:start}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:20px;transition:background .3s}
+.card h3{font-size:18px;margin-bottom:12px}h4{font-size:14px;margin:16px 0 6px}.mu{color:var(--mute)}.sm{font-size:12px}
+.chipbar{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px}
+.chipbar button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 18px;font:600 14px "DM Sans";cursor:pointer}
+.chipbar button.on{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.stage{position:relative;background:#080c16;border-radius:24px;overflow:hidden;aspect-ratio:4/3}
+video,canvas.ov{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.count{position:absolute;left:22px;top:12px;color:#fff;font:800 clamp(64px,12vw,120px)/1 "Bricolage Grotesque";text-shadow:0 4px 24px #000a}
+.count small{display:block;font:500 14px "DM Sans";color:#b4bdff}
+.fpill{position:absolute;right:16px;top:16px;background:#0009;backdrop-filter:blur(8px);color:#fff;border-radius:16px;padding:8px 16px;text-align:right}
+.fpill b{font:800 30px "Bricolage Grotesque";display:block;line-height:1.1}
+.msg{position:absolute;left:0;right:0;bottom:6px;padding:14px 22px;background:linear-gradient(transparent,#000d);color:#fff;font-weight:500}
+.msg.good{box-shadow:inset 4px 0 var(--good)}.msg.warn{box-shadow:inset 4px 0 var(--warn)}.msg.bad{box-shadow:inset 4px 0 var(--bad)}
+.depth{position:absolute;left:0;bottom:0;height:6px;background:var(--acc);width:0;transition:width .1s}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 20px}
+.btn{background:var(--acc);color:var(--on);border:0;border-radius:999px;padding:11px 22px;font:700 14px "DM Sans";cursor:pointer}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+canvas.chart{width:100%;height:110px;display:block}
+.big{font:800 56px/1 "Bricolage Grotesque"}
+.meter{margin-top:14px}.meter .l{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.track{height:8px;background:var(--track);border-radius:9px;overflow:hidden}.track i{display:block;height:100%;width:0;border-radius:9px;background:var(--acc);transition:width .3s}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:7px 4px;text-align:left;border-bottom:1px solid var(--line)}th{color:var(--mute);font-weight:500}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.cs{background:var(--tint);border-radius:12px;padding:10px 14px;margin-bottom:8px}.cs span{display:block;font:700 12px "DM Sans";color:var(--mute);margin-bottom:2px}
+.info{display:grid;grid-template-columns:minmax(0,230px) 1fr;gap:24px}@media(max-width:700px){.info{grid-template-columns:1fr}}
+.body{width:100%}.info ul{margin:0;padding-left:18px}.info li{margin:3px 0}.er li::marker{color:var(--bad)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.ch{background:var(--soft);color:var(--chip);border-radius:999px;padding:3px 12px;font-size:13px}.ch.p{background:var(--acc);color:var(--on)}
+.tip{background:var(--tint);border-radius:12px;padding:10px 14px;margin:16px 0 0}
+.rt{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}.rt>div:first-child{flex:1;min-width:150px}
+.dots{display:flex;gap:6px}.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}.dots i.on{background:var(--good);border-color:var(--good)}
+.x{border:0;background:none;font-size:22px;color:var(--mute);cursor:pointer}
+.add{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+select,input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:500 14px "DM Sans";background:var(--card);color:var(--ink)}input{width:70px}
+.week{display:flex;gap:8px;margin-top:16px}.week div{flex:1;text-align:center;font-size:12px;color:var(--mute)}.week i{display:block;height:34px;border-radius:10px;background:var(--track);margin-bottom:4px}.week i.on{background:var(--good)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.stats b{display:block;font:800 22px "Bricolage Grotesque"}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="top"><div class="logo">Hiper<i>Move</i></div>
+<nav id="nav"><button data-v="train" class="on">Train</button><button data-v="routine">Routine</button><button data-v="lib">Library</button></nav>
+<div class="pill"><svg viewBox="0 0 24 24"><path d="M12 2c1 4-3 6-3 10a5 5 0 0 0 10 0c0-2-1-3-2-4 0 2-1 3-2 3 1-4-1-7-3-9zM7 14c-1 1-2 2-2 4a7 7 0 0 0 14 0c0 3-3 4-7 4s-5-3-5-8z"/></svg><span id="sk">0-day streak</span></div>
+<button class="pill" id="th" aria-label="Toggle day and night mode">Night</button></div>
+<div class="wrap">
+<section class="view" id="train">
+ <div class="chipbar" id="ex"></div>
+ <div class="grid"><div>
+  <div class="stage"><video id="v" playsinline muted></video><canvas class="ov" id="c"></canvas>
+   <div class="count"><span id="n">0</span><small>reps</small></div>
+   <div class="fpill"><span class="sm">Form</span><b id="fp">--</b></div>
+   <div class="msg" id="msg">Loading pose model…</div><div class="depth" id="dp"></div></div>
+  <div class="row"><button class="btn" id="cam">Start camera</button><label class="btn ghost">Upload video<input id="file" type="file" accept="video/*" hidden></label><button class="btn ghost" id="fin">Finish set</button><button class="btn ghost" id="rst">Reset</button></div>
+  <div class="card"><h3>Joint angle</h3><canvas class="chart" id="ch"></canvas></div>
+  <div class="card" id="ti"></div></div>
+ <div>
+  <div class="card"><h3>Form check</h3><div class="big" id="fs">--</div><div class="mu" id="fe">Start a set to see your form score</div>
+   <div class="meter"><div class="l"><span id="l1"></span><b id="v1">--</b></div><div class="track"><i id="b1"></i></div></div>
+   <div class="meter"><div class="l"><span id="l2"></span><b id="v2">--</b></div><div class="track"><i id="b2"></i></div></div></div>
+  <div class="card"><h3>Set log</h3><table><thead><tr><th>#</th><th>Angle</th><th>Form</th><th>Time</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <div class="card"><h3>AI coach · Gemma 4</h3><div id="coach" class="mu">Finish a set to get feedback in plain language.</div></div>
+ </div></div></section>
+<section class="view" id="routine" hidden><div class="grid"><div>
+ <div class="card"><h3>Today's routine</h3><div id="rl"></div>
+  <div class="add"><select id="ae"></select><input id="as" type="number" min="1" max="10" value="3" aria-label="Sets"> sets <input id="ar" type="number" min="1" max="50" value="10" aria-label="Reps"> reps <button class="btn" id="add">Add</button></div></div></div>
+ <div><div class="card"><h3>Streak</h3><div class="big" id="sn">0</div><div class="mu" id="st"></div>
+  <div class="meter"><div class="l"><span>Next milestone</span><b id="ms"></b></div><div class="track"><i id="mb"></i></div></div>
+  <div class="week" id="wk"></div>
+  <div class="stats"><div><b id="s1">0</b><span class="mu sm">Best streak</span></div><div><b id="s2">0</b><span class="mu sm">Total reps</span></div><div><b id="s3">--</b><span class="mu sm">Form today</span></div></div></div></div></div></section>
+<section class="view" id="lib" hidden></section></div>
+<script type="module">
+import {PoseLandmarker,FilesetResolver,DrawingUtils} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const $=s=>document.querySelector(s),v=$('#v'),c=$('#c'),g=c.getContext('2d'),ch=$('#ch'),cg=ch.getContext('2d'),cl=x=>Math.max(0,Math.min(1,x));
+const SIDE={L:{a:11,b:13,c:15,h:23,k:25,n:27},R:{a:12,b:14,c:16,h:24,k:26,n:28}};
+const M={quads:'Quadriceps',glutes:'Glutes',hams:'Hamstrings',core:'Core',calves:'Calves',chest:'Chest',tri:'Triceps',delt:'Shoulders',bi:'Biceps',fore:'Forearms',back:'Upper back'};
+// 3D joint angle on world landmarks (metres): independent of camera aspect ratio and viewing angle
+const ang3=(p,q,r)=>{const a=[p.x-q.x,p.y-q.y,p.z-q.z],b=[r.x-q.x,r.y-q.y,r.z-q.z];return Math.acos(Math.max(-1,Math.min(1,(a[0]*b[0]+a[1]*b[1]+a[2]*b[2])/((Math.hypot(...a)*Math.hypot(...b))||1))))*180/Math.PI};
+const lean=P=>{const a=P('a'),h=P('h');return Math.acos(Math.min(1,Math.abs(a.y-h.y)/(Math.hypot(a.x-h.x,a.y-h.y,a.z-h.z)||1)))*180/Math.PI};
+const D={
+squat:{n:'Squat',tag:'Lower body',j:['h','k','n'],lo:100,hi:160,pk:'max',l:['Depth','Upright torso'],
+ desc:'Sit your hips back and down as if into a chair, then drive through your feet to stand tall.',
+ ben:['Builds leg and glute strength','Improves hip, knee and ankle mobility','Makes stairs and lifting easier','Burns more energy than single-joint moves'],
+ pri:['quads','glutes'],sec:['hams','core','calves'],err:['Knees caving inward','Heels lifting off the floor','Chest dropping forward','Stopping above parallel'],
+ tip:'Place the camera at hip height. Side-on or 45° works, with your full body in frame.',
+ p:lean,sc:(m,p)=>[cl((160-m)/70),cl((75-p)/30)],is:['Go deeper: aim for thighs parallel to the floor','Chest is leaning forward: stay more upright']},
+lunge:{n:'Lunge',tag:'Lower body',j:['h','k','n'],lo:100,hi:160,pk:'max',l:['Depth','Upright torso'],
+ desc:'Step forward and lower until the front knee bends near 90 degrees, then push back up.',
+ ben:['Builds single-leg strength and balance','Targets quads and glutes','Evens out left-right strength gaps','Improves hip mobility'],
+ pri:['quads','glutes'],sec:['hams','core','calves'],err:['Front knee collapsing inward','Torso leaning forward','Steps that are too short','Back knee hitting the floor'],
+ tip:'Do all reps on one leg, then switch. Film from the side with that leg toward the camera.',
+ p:lean,sc:(m,p)=>[cl((160-m)/70),cl((45-p)/25)],is:['Lower until your front knee is near 90 degrees','Keep your torso upright']},
+hinge:{n:'Hip hinge',tag:'Posterior chain',j:['a','h','k'],lo:105,hi:160,pk:'min',l:['Hinge depth','Soft knees'],
+ desc:'Push your hips back with a flat back and soft knees until your hamstrings stretch, then stand tall.',
+ ben:['Strengthens hamstrings, glutes and lower back','Teaches safe lifting from the floor','Improves posture','Builds the base for deadlifts'],
+ pri:['hams','glutes'],sec:['back','core','fore'],err:['Rounding the lower back','Bending knees too much (a squat, not a hinge)','Weight drifting away from the legs','Looking up and straining the neck'],
+ tip:'Film from the side, hip height, holding a light weight or nothing.',
+ p:P=>ang3(P('h'),P('k'),P('n')),sc:(m,p)=>[cl((160-m)/65),cl((p-100)/35)],is:['Hinge further: push your hips back','Keep knees soft, not deep: this is a hinge, not a squat']},
+pushup:{n:'Push-up',tag:'Upper body',j:['a','b','c'],lo:95,hi:155,pk:'min',l:['Depth','Straight body line'],
+ desc:'Lower your chest toward the floor with a straight body line, then press back up.',
+ ben:['Builds chest, shoulder and arm strength','Trains core stability at the same time','Needs no equipment','Easy to make harder or easier'],
+ pri:['chest','tri'],sec:['delt','core'],err:['Hips sagging or piking up','Elbows flaring wide','Head dropping forward','Half reps'],
+ tip:'Film from the side so your whole body line is visible.',
+ p:P=>ang3(P('a'),P('h'),P('n')),sc:(m,p)=>[cl((155-m)/70),cl((p-140)/30)],is:['Lower your chest further','Hips are sagging or piking: keep one straight line']},
+press:{n:'Shoulder press',tag:'Upper body',j:['a','b','c'],lo:95,hi:160,pk:'max',l:['Range of motion','No back arch'],
+ desc:'Press weights from shoulder height to overhead until your arms are straight. A water bottle works too.',
+ ben:['Builds shoulder and upper-arm strength','Strengthens triceps and upper back','Improves overhead reach','Supports good posture'],
+ pri:['delt','tri'],sec:['core','chest','back'],err:['Arching your lower back','Flaring elbows out','Not locking out overhead','Pushing your head forward'],
+ tip:'Film from the side, standing, with the working arm toward the camera.',
+ p:lean,sc:(m,p)=>[cl((160-m)/70),cl((30-p)/20)],is:['Lower to shoulder height each rep','You are leaning back: brace your core']},
+curl:{n:'Bicep curl',tag:'Arms',j:['a','b','c'],lo:55,hi:150,pk:'max',l:['Range of motion','Elbow stays still'],
+ desc:'Bend your elbow to lift a weight toward your shoulder, then lower it slowly.',
+ ben:['Builds biceps size and strength','Improves grip and forearm strength','Helps with pulling and carrying','Simple to learn and track'],
+ pri:['bi'],sec:['fore','delt'],err:['Swinging the elbow forward','Leaning back to cheat the weight','Cutting the range short','Dropping the weight too fast'],
+ tip:'Film from the side with your working arm toward the camera.',
+ p:P=>ang3(P('h'),P('a'),P('b')),sc:(m,p)=>[cl((155-m)/110),cl((45-p)/30)],is:['Curl higher and squeeze at the top','Elbow is swinging: pin it to your side']},
+raise:{n:'Lateral raise',tag:'Shoulders',j:['h','a','c'],inv:1,lo:100,hi:160,pk:'max',l:['Raise height','No swinging'],
+ desc:'Lift your arms out to the sides up to shoulder height, then lower with control.',
+ ben:['Builds wider, stronger shoulders','Improves shoulder stability','Balances pushing exercises','Light weights are enough'],
+ pri:['delt'],sec:['back','fore'],err:['Using momentum to swing up','Lifting above shoulder height','Shrugging the shoulders','Bending the elbows too much'],
+ tip:'Face the camera with both arms in view. One arm is tracked at a time.',
+ p:lean,sc:(m,p)=>[cl((165-m)/70),cl((30-p)/20)],is:['Raise your arm up to shoulder height','You are swinging: keep your body still']}};
+function body(pri,sec){const f=k=>pri.includes(k)?'var(--acc)':sec.includes(k)?'#a9b4ff':'var(--neu)',
+ e=(k,x,y,rx,ry)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f(k)}"/>`,r=(k,x,y,w,h,q=6)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${q}" fill="${f(k)}"/>`;
+ const fig=(dx,b)=>`<g transform="translate(${dx} 0)"><circle cx="60" cy="16" r="12" fill="var(--neu2)"/>`+(b?r('back',44,44,32,44,10)+e('tri',30,72,6,15)+e('tri',90,72,6,15)+e('glutes',51,112,10,11)+e('glutes',69,112,10,11)+r('hams',44,126,14,40,7)+r('hams',62,126,14,40,7)
+ :e('delt',40,50,9,8)+e('delt',80,50,9,8)+r('chest',46,48,28,22,9)+r('core',48,72,24,34,9)+e('bi',30,74,6,14)+e('bi',90,74,6,14)+r('quads',44,112,14,54,7)+r('quads',62,112,14,54,7))
+ +e('fore',26,106,5,14)+e('fore',94,106,5,14)+r('calves',45,170,11,44,5)+r('calves',64,170,11,44,5)+'</g>';
+ return `<svg viewBox="0 0 250 220" class="body">${fig(0,0)}${fig(130,1)}</svg>`}
+const li=a=>a.map(x=>`<li>${x}</li>`).join('');
+const info=k=>{const d=D[k];return `<div class="info"><div>${body(d.pri,d.sec)}<p class="mu sm">Front and back view. Dark: main muscles. Light: supporting.</p></div><div><p>${d.desc}</p><h4>Benefits</h4><ul>${li(d.ben)}</ul><h4>Muscles worked</h4><div class="chips">${d.pri.map(m=>`<span class="ch p">${M[m]}</span>`).join('')}${d.sec.map(m=>`<span class="ch">${M[m]}</span>`).join('')}</div><h4>Common mistakes</h4><ul class="er">${li(d.err)}</ul><p class="tip"><b>Camera tip:</b> ${d.tip}</p></div></div>`};
+const K='hm_v1';let S={log:{},routine:[{ex:'squat',sets:3,reps:10},{ex:'pushup',sets:3,reps:8},{ex:'curl',sets:3,reps:12}]};
+try{S=Object.assign(S,JSON.parse(localStorage.getItem(K))||{})}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const day=(o=0)=>{const d=new Date();d.setDate(d.getDate()-o);return d.toLocaleDateString('en-CA')};
+const streak=()=>{let n=0,o=S.log[day()]?0:1;while(S.log[day(o)]){n++;o++}return n};
+const best=()=>{let b=0,c=0,p=null;for(const d of Object.keys(S.log).sort()){c=p&&new Date(d)-new Date(p)==864e5?c+1:1;b=Math.max(b,c);p=d}return b};
+const cls=f=>f>=85?'good':f>=65?'warn':'bad',col={good:'var(--good)',warn:'var(--warn)',bad:'var(--bad)'};
+const esc=s=>s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+let ex='squat',pl,reps=[],state='up',minA=999,t0=0,ang=null,pE=null,hist=[],lastT=-1,running=false;
+const say=(t,f)=>{$('#msg').textContent=t;$('#msg').className='msg '+(f==null?'':cls(f))};
+function theme(t){document.documentElement.dataset.theme=t;$('#th').textContent=t=='dark'?'Day':'Night';try{localStorage.setItem('hm_theme',t)}catch(e){}chart()}
+$('#th').onclick=()=>theme(document.documentElement.dataset.theme=='dark'?'light':'dark');
+function setEx(k){ex=k;document.querySelectorAll('#ex button').forEach(b=>b.classList.toggle('on',b.dataset.e==k));resetSet();$('#l1').textContent=D[k].l[0];$('#l2').textContent=D[k].l[1];$('#ti').innerHTML=`<h3>About the ${D[k].n.toLowerCase()}</h3>`+info(k);chart()}
+function meter(i,val){const e=$('#b'+i);e.style.width=(val??0)+'%';e.style.background=val==null?'':col[cls(val)];$('#v'+i).textContent=val==null?'--':val+'%'}
+function ui(){const n=reps.length,l=reps[n-1];$('#n').textContent=n;
+ $('#tb').innerHTML=reps.map((r,i)=>`<tr><td>${i+1}</td><td>${r.min}°</td><td class="${cls(r.form)}"><b>${r.form}%</b></td><td>${r.dur}s</td></tr>`).join('')||'<tr><td colspan="4" class="mu">No reps yet</td></tr>';
+ const a=n?Math.round(reps.reduce((s,r)=>s+r.form,0)/n):null;
+ $('#fs').textContent=a==null?'--':a+'%';$('#fs').className='big '+(a==null?'':cls(a));$('#fp').textContent=a==null?'--':a+'%';
+ $('#fe').textContent=a==null?'Start a set to see your form score':`Error rate ${100-a}% · last rep ${l.form}%`;meter(1,l?l.d:null);meter(2,l?l.q:null)}
+function rep(dur){const E=D[ex],[d,q]=E.sc(minA,pE??(E.pk=='max'?0:180)),f=Math.round(100*(.55*d+.45*q));
+ const r={min:Math.round(E.inv?180-minA:minA),dur:+dur.toFixed(1),form:f,d:Math.round(d*100),q:Math.round(q*100),tip:d<.8?E.is[0]:q<.7?E.is[1]:'Clean rep'};
+ reps.push(r);pE=null;ui();say(`Rep ${reps.length}: ${f}% form (${100-f}% error). ${r.tip}`,f)}
+function step(wl){const E=D[ex],keys=[...E.j,'a','h'],vis=s=>keys.reduce((t,k)=>t+wl[SIDE[s][k]].visibility,0),s=vis('L')>=vis('R')?'L':'R',P=k=>wl[SIDE[s][k]];
+ if(E.j.some(k=>P(k).visibility<.5)){say('Joints hidden. Step back or turn so your working side faces the camera.');return}
+ let raw=ang3(...E.j.map(P));if(E.inv)raw=180-raw;ang=ang==null?raw:ang*.5+raw*.5;const p=E.p(P);hist.push(ang);if(hist.length>240)hist.shift();
+ if(ang<E.hi)pE=pE==null?p:(E.pk=='max'?Math.max(pE,p):Math.min(pE,p));else if(state=='up')pE=null;
+ if(state=='up'&&ang<E.lo){state='down';t0=performance.now();minA=ang}
+ else if(state=='down'){minA=Math.min(minA,ang);if(ang>E.hi){state='up';const d=(performance.now()-t0)/1000;if(d>=.4)rep(d);else pE=null}}
+ $('#dp').style.width=cl((E.hi-ang)/(E.hi-E.lo))*100+'%'}
+function chart(){const w=ch.width=ch.clientWidth*2,h=ch.height=220,E=D[ex],st=getComputedStyle(document.documentElement),y=a=>h-8-(a-30)/150*(h-16);cg.clearRect(0,0,w,h);
+ cg.strokeStyle=st.getPropertyValue('--line');cg.setLineDash([8,8]);cg.lineWidth=2;[E.lo,E.hi].forEach(a=>{cg.beginPath();cg.moveTo(0,y(a));cg.lineTo(w,y(a));cg.stroke()});cg.setLineDash([]);
+ cg.strokeStyle=st.getPropertyValue('--acc');cg.lineWidth=4;cg.beginPath();hist.forEach((a,i)=>{const x=i/240*w;i?cg.lineTo(x,y(a)):cg.moveTo(x,y(a))});cg.stroke()}
+function loop(){if(!running)return;requestAnimationFrame(loop);if(!pl||v.readyState<2||v.currentTime===lastT)return;lastT=v.currentTime;
+ if(c.width!=v.videoWidth){c.width=v.videoWidth;c.height=v.videoHeight}const res=pl.detectForVideo(v,performance.now());g.clearRect(0,0,c.width,c.height);
+ if(res.landmarks[0]){const d=new DrawingUtils(g);d.drawConnectors(res.landmarks[0],PoseLandmarker.POSE_CONNECTIONS,{color:'#8ea0ff',lineWidth:4});d.drawLandmarks(res.landmarks[0],{color:'#fff',radius:4});step(res.worldLandmarks[0]);chart()}
+ else say('No person detected. Step back so your full body is in frame.')}
+function resetSet(){reps=[];hist=[];state='up';ang=null;pE=null;ui();$('#dp').style.width='0'}
+function head(){$('#sk').textContent=streak()+'-day streak'}
+function routine(){const L=S.log[day()],T=[3,7,14,30,60,100],n=streak(),nx=T.find(x=>x>n)||n;
+ $('#rl').innerHTML=S.routine.map((r,i)=>{const d=L?.ex[r.ex]||0;return `<div class="rt"><div><b>${D[r.ex].n}</b><div class="mu sm">${r.sets} sets × ${r.reps} reps · ${D[r.ex].tag}</div></div><div class="dots">${Array.from({length:r.sets},(_,k)=>`<i class="${k<d?'on':''}"></i>`).join('')}</div><button class="btn" data-go="${r.ex}">Start</button><button class="x" data-rm="${i}" aria-label="Remove">×</button></div>`}).join('')||'<p class="mu">Your routine is empty. Add an exercise below.</p>';
+ $('#sn').textContent=n+(n==1?' day':' days');$('#st').textContent=L?'You trained today. Come back tomorrow to keep it alive.':n?'Train today to keep your streak alive.':'Finish a set today to start your streak.';
+ $('#ms').textContent=nx+' days';$('#mb').style.width=Math.min(100,n/nx*100)+'%';
+ $('#wk').innerHTML=[6,5,4,3,2,1,0].map(o=>`<div><i class="${S.log[day(o)]?'on':''}"></i>${new Date(day(o)+'T12:00').toLocaleDateString('en',{weekday:'narrow'})}</div>`).join('');
+ $('#s1').textContent=best();$('#s2').textContent=Object.values(S.log).reduce((a,l)=>a+l.reps,0);$('#s3').textContent=L&&L.fn?Math.round(L.fs/L.fn)+'%':'--'}
+const show=k=>{document.querySelectorAll('.view').forEach(s=>s.hidden=s.id!=k);document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==k));if(k=='routine')routine();if(k=='train')chart()};
+$('#nav').onclick=e=>e.target.dataset.v&&show(e.target.dataset.v);
+$('#rl').onclick=e=>{const t=e.target;if(t.dataset.go){setEx(t.dataset.go);show('train')}if(t.dataset.rm){S.routine.splice(+t.dataset.rm,1);save();routine()}};
+$('#add').onclick=()=>{S.routine.push({ex:$('#ae').value,sets:+$('#as').value||3,reps:+$('#ar').value||10});save();routine()};
+$('#ex').innerHTML=Object.keys(D).map(k=>`<button data-e="${k}">${D[k].n}</button>`).join('');$('#ex').onclick=e=>e.target.dataset.e&&setEx(e.target.dataset.e);
+$('#ae').innerHTML=Object.keys(D).map(k=>`<option value="${k}">${D[k].n}</option>`).join('');
+$('#lib').innerHTML=Object.keys(D).map(k=>`<div class="card"><h3>${D[k].n} <span class="mu">· ${D[k].tag}</span></h3>${info(k)}</div>`).join('');
+async function init(){const f=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+ pl=await PoseLandmarker.createFromOptions(f,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.6,minPosePresenceConfidence:.6,minTrackingConfidence:.6});say('Ready. Start the camera or upload a video.')}
+const start=()=>{running=true;loop()};
+$('#cam').onclick=async()=>{try{v.srcObject=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:960},height:{ideal:720}}});v.style.transform=c.style.transform='scaleX(-1)';await v.play();say('Tracking. Keep your full body in frame with good light.');start()}catch(e){say('Camera blocked. Allow access or upload a video.')}};
+$('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;v.srcObject=null;v.style.transform=c.style.transform='';v.src=URL.createObjectURL(f);v.muted=true;v.play();say('Analyzing video…');start();v.onended=()=>$('#fin').click()};
+$('#rst').onclick=()=>{resetSet();$('#coach').className='mu';$('#coach').textContent='Finish a set to get feedback in plain language.'};
+function coachHTML(t){const m={};t.replace(/\*\*/g,'').split('\n').forEach(l=>{const x=l.match(/^\s*(WELL|FIX|TIP)\s*:\s*(.+)/i);if(x)m[x[1].toUpperCase()]=x[2]});
+ if(!m.WELL&&!m.FIX)return `<p>${esc(t)}</p>`;return [['WELL','Went well'],['FIX','Fix this'],['TIP','Next set']].filter(([k])=>m[k]).map(([k,n])=>`<div class="cs"><span>${n}</span>${esc(m[k])}</div>`).join('')}
+$('#fin').onclick=async()=>{const o=$('#coach');o.className='mu';if(!reps.length){o.textContent='Do at least one rep first.';return}
+ const set=reps.slice(),e=ex,L=S.log[day()]||(S.log[day()]={sets:0,reps:0,ex:{},fs:0,fn:0});
+ L.sets++;L.reps+=set.length;L.ex[e]=(L.ex[e]||0)+1;L.fs+=set.reduce((a,r)=>a+r.form,0);L.fn+=set.length;save();head();routine();
+ o.textContent='Your coach is reviewing the set…';
+ try{const r=await fetch('/api/coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({exercise:D[e].n,reps:set})});const j=await r.json();o.className='';o.innerHTML=j.text?coachHTML(j.text):esc(j.error)}
+ catch(x){o.textContent='Coach offline. Start the backend (see README).'}resetSet()};
+try{theme(localStorage.getItem('hm_theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))}catch(e){theme('light')}
+head();setEx('squat');init();
+</script></body></html>
